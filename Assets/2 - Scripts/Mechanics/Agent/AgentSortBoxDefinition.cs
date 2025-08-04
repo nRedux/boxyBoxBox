@@ -9,7 +9,7 @@ using UnityEngine;
 [System.Serializable]
 public class AgentSortBox : IAgentBehavior, ICloneable
 {
-
+    const float RANDOM_VERTICAL_OFFSET = 3;
     const float BOX_HOLD_DISTANCE = .4f;
 
     [SerializeField]
@@ -68,7 +68,8 @@ public class AgentSortBox : IAgentBehavior, ICloneable
 
         var sortable = Target.GetQuality<Sortable>();
         var destination = GetDestination( sortable.SortType );
-        _pathFollower = Agent.PathToLocation( destination.transform.position );
+        Vector3 randomOffset  = Vector3.up * ( UnityEngine.Random.value - .5f ) * 2f * RANDOM_VERTICAL_OFFSET;
+        _pathFollower = Agent.PathToLocation( destination.transform.position + randomOffset );
     }
 
 
