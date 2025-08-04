@@ -2,7 +2,9 @@
 using UnityEngine;
 
 
-
+/// <summary>
+/// Walk behavior for agents
+/// </summary>
 [System.Serializable]
 public class AgentWalk : IAgentBehavior, ICloneable
 {
@@ -58,7 +60,7 @@ public class AgentWalk : IAgentBehavior, ICloneable
 
     public void Update()
     {
-        if( _pathFollower.IsComplete )
+        if( _pathFollower == null || _pathFollower.IsComplete )
             _isComplete = true;
     }
 }

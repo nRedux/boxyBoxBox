@@ -7,10 +7,12 @@ using UnityEngine.InputSystem.Utilities;
 public class BoxSpawner : MonoBehaviour
 {
 
-
-    public Entity BoxPrefab;
-    public int MaxBoxes;
-    public float DelayBetween;
+    [SerializeField]
+    private Entity[] _boxPrefabs;
+    [SerializeField]
+    private int _maxBoxes;
+    [SerializeField]
+    private float _delayBetwen;
 
 
     private World _world;
@@ -23,13 +25,29 @@ public class BoxSpawner : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _world = FindFirstObjectByType<World>();
 
-        _delayTimer = DelayBetween;
+        _delayTimer = _delayBetwen;
 
-        if( _world == null || _spriteRenderer == null || BoxPrefab == null )
+        if( _world == null || _spriteRenderer == null || _boxPrefabs.Length == 0 )
             enabled = false;
     }
 
 
+    private void Update()
+    {
+
+        _delayTimer -= Time.deltaTime;
+        if( _delayTimer <= 0f && _world.BoxCount <= _maxBoxes )
+        {
+            _delayTimer = _delayBetwen;
+            SpawnBox();
+        }
+    }
+
+
+    /// <summary>
+    /// Get location to spawn box
+    /// </summary>
+    /// <returns>Location within spawner SpriteRenderer</returns>
     private Vector3 GetSpawnlocation()
     {
         var bounds = _spriteRenderer.localBounds;
@@ -42,31 +60,15 @@ public class BoxSpawner : MonoBehaviour
     }
 
 
-    private void Update()
-    {
-
-        _delayTimer -= Time.deltaTime;
-        if( _delayTimer <= 0f && _world.BoxCount <= MaxBoxes )
-        {
-            _delayTimer = DelayBetween;
-            SpawnBox();
-        }
-        
-        /*
-        if( Input.GetKeyDown( KeyCode.B ) )
-        {
-            SpawnBox();
-        }
-        */
-    }
-
-
+    /// <summary>
+    /// Spawn a new box instance
+    /// </summary>
     private void SpawnBox()
     {
-        if( BoxPrefab == null )
+        if( _boxPrefabs == null )
             return;
 
-        var instance = Instantiate<Entity>( BoxPrefab );
+        var instance = Instantiate<Entity>( _boxPrefabs[Random.Range(0, _boxPrefabs.Length) ] );
         var sortable = instance.GetQuality<Sortable>();
         if( sortable == null )
         {

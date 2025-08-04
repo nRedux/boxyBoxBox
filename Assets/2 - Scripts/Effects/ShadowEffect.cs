@@ -1,5 +1,9 @@
 using UnityEngine;
 
+
+/// <summary>
+/// Quick and dirty mechanism for drop shadows
+/// </summary>
 public class ShadowEffect : MonoBehaviour
 {
     [SerializeField]
@@ -43,7 +47,7 @@ public class ShadowEffect : MonoBehaviour
         _shadowRenderer.sortingOrder = 1;
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if( _entity != null )
         {

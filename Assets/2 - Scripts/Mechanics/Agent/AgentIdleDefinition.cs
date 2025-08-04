@@ -2,6 +2,9 @@
 using UnityEngine;
 
 
+/// <summary>
+/// Idle state for agents
+/// </summary>
 [System.Serializable]
 public class AgentIdle : IAgentBehavior, ICloneable
 {

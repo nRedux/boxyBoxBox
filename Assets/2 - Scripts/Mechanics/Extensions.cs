@@ -9,6 +9,13 @@ public static class Extensions
     private static int DEPTH_ORDER_START = 10000;
     private static int DEPTH_ORDER_DENSITY = 10;
 
+
+    /// <summary>
+    /// Identify components which derive from the given type
+    /// </summary>
+    /// <typeparam name="TSource">Base type</typeparam>
+    /// <param name="gameObject">The game object to hunt within</param>
+    /// <returns>List of found components</returns>
     public static List<TSource> GetDerivedComponents<TSource>( this GameObject gameObject ) where TSource: class
     {
         var monoBehaviors = gameObject.GetComponents<MonoBehaviour>();
@@ -16,6 +23,13 @@ public static class Extensions
     }
 
 
+    /// <summary>
+    /// Helper linq style operation to perform an action on a collection
+    /// </summary>
+    /// <typeparam name="TSource">Collection template type</typeparam>
+    /// <param name="collection">The collection</param>
+    /// <param name="action">The action to perform</param>
+    /// <exception cref="System.ArgumentNullException">If either argument is null, is thrown</exception>
     public static void Do<TSource>( this IEnumerable<TSource> collection, System.Action<TSource> action )
     {
         if( collection == null )
@@ -26,37 +40,16 @@ public static class Extensions
             action( item );
     }
 
+
+    /// <summary>
+    /// Simple depth sorting algo for sprites
+    /// </summary>
+    /// <param name="camera">Camera we're interacting with</param>
+    /// <param name="transform">Transform we want to find a depth value for</param>
+    /// <returns>A depth value derived from screen space</returns>
     public static int GetDepthSortOrder( this Camera camera, Transform transform )
     {
         var screenPoint = camera.WorldToScreenPoint( transform.position );
         return DEPTH_ORDER_START - Mathf.FloorToInt( screenPoint.y ) / DEPTH_ORDER_DENSITY;
-    }
-}
-
-
-public static class MathfX
-{
-
-    public static float EaseOutBounce( float x )
-    {
-        const float n1 = 7.5625f;
-        const float d1 = 2.75f;
-
-        if( x < 1 / d1 )
-        {
-            return n1 * x * x;
-        }
-        else if( x < 2 / d1 )
-        {
-            return n1 * ( x -= 1.5f / d1 ) * x + 0.75f;
-        }
-        else if( x < 2.5 / d1 )
-        {
-            return n1 * ( x -= 2.25f / d1 ) * x + 0.9375f;
-        }
-        else
-        {
-            return n1 * ( x -= 2.625f / d1 ) * x + 0.984375f;
-        }
     }
 }

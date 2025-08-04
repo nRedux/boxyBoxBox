@@ -3,9 +3,14 @@ using System.Linq;
 using UnityEngine;
 
 
+/// <summary>
+/// Sorting behavior for agents
+/// </summary>
 [System.Serializable]
 public class AgentSortBox : IAgentBehavior, ICloneable
 {
+
+    const float BOX_HOLD_DISTANCE = .4f;
 
     [SerializeField]
     private float _speed;
@@ -82,8 +87,12 @@ public class AgentSortBox : IAgentBehavior, ICloneable
 
     public void Update()
     {
-        if( _pathFollower.IsComplete )
+        _grabbedObject.transform.localPosition = Vector3.Lerp( _grabbedObject.transform.localPosition, Agent.Velocity.normalized * BOX_HOLD_DISTANCE, Time.deltaTime * 3f );
+
+        if( _pathFollower == null || _pathFollower.IsComplete )
         {
+            var r = _grabbedObject.GetComponent<Rigidbody2D>();
+            r.simulated = true;
             _isComplete = true;
             _grabbedObject.transform.SetParent( null );
         }

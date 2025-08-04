@@ -5,44 +5,29 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-public class AStarPathAdapter
-{
-
-    private AStarPath _path;
-
-    public AStarPathAdapter( AStarPath path )
-    {
-        this._path = path;
-    }
-
-}
-
-
 public class World : MonoBehaviour
 {
 
-
-    public Tilemap TileMap;
-
-    public Agent AgentPrefab;
-
-    public Entity Box;
-
+    public static World Instance => _instance;
+    [SerializeField]
+    private Tilemap _tileMap;
 
     private static World _instance;
     private AStarGraph _graph = null;
     private bool _hasPath;
     private AStarPath _path;
     private Camera _camera;
+    private List<Entity> _boxes = new List<Entity>();
 
-    public List<Entity> Boxes = new List<Entity>();
 
-    public int BoxCount => Boxes.Count;
+    public int BoxCount => _boxes.Count;
 
-    public static World Instance => _instance;
+    
     public Bounds WorldBounds { get; private set; }
 
+
     public Camera Camera => _camera;
+
 
     public void SetPath( AStarPath path )
     {
@@ -55,22 +40,22 @@ public class World : MonoBehaviour
     {
         _camera = Camera.main;
         _instance = this;
-        Boxes.Add( Box );
+        //Boxes.Add( Box );
         Initialize();
     }
 
 
     public void AddBox(Entity box )
     {
-        Boxes.Add( box );
+        _boxes.Add( box );
     }
 
 
     public Entity TakeBox()
     {
-        var box = Boxes.FirstOrDefault();
+        var box = _boxes.FirstOrDefault();
         if( box != null )
-            Boxes.Remove( box );
+            _boxes.Remove( box );
         return box;
     }
 
@@ -107,17 +92,17 @@ public class World : MonoBehaviour
 
     private void InitializeTilemap()
     {
-        if( TileMap == null )
-            TileMap = GetComponent<Tilemap>();
+        if( _tileMap == null )
+            _tileMap = GetComponent<Tilemap>();
 
-        TileMap.CompressBounds();
-        WorldBounds = TileMap.localBounds;
+        _tileMap.CompressBounds();
+        WorldBounds = _tileMap.localBounds;
     }
 
 
     private void InitializePathing()
     {
-        if( TileMap == null )
+        if( _tileMap == null )
             return;
 
         _graph = new AStarGraph( Mathf.CeilToInt(WorldBounds.size.x), Mathf.CeilToInt(WorldBounds.size.y) );
@@ -136,18 +121,20 @@ public class World : MonoBehaviour
             }
         }
 
-        if( TileMap == null )
+        if( _tileMap == null )
             return;
-        TileMap.CompressBounds();
-        var bounds = TileMap.localBounds;
+        _tileMap.CompressBounds();
+        var bounds = _tileMap.localBounds;
         Gizmos.DrawWireCube( bounds.center, bounds.size );
     }
+
 
     public Vector2Int WorldToPathingSpace( Vector3 world )
     {
         var vec = new Vector2Int( Mathf.RoundToInt( world.x - WorldBounds.min.x ), Mathf.RoundToInt(world.y - WorldBounds.min.y ) );
         return vec;
     }
+
 
     public AStarPath CalculatePath( Vector2Int start, Vector2Int goal )
     {

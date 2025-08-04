@@ -4,6 +4,9 @@ using UnityEngine.Events;
 using System.Linq;
 
 
+/// <summary>
+/// Defines an animation event which can be responded to.
+/// </summary>
 [System.Serializable]
 public class AnimationEvent
 {
@@ -12,6 +15,9 @@ public class AnimationEvent
 }
 
 
+/// <summary>
+/// Listens for raised animation events on the same object
+/// </summary>
 public class AnimationEventListener : MonoBehaviour
 {
 
