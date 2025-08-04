@@ -8,7 +8,8 @@
 public class FakeHeight
 {
     private const float SLEEP_VELOCITY = .001f;
-    private const float COEF_RESTITUTION = .15f;
+    private const float COEF_RESTITUTION_MIN = .10f;
+    private const float COEF_RESTITUTION_MAX = .25f;
 
     [SerializeField]
     private AudioSource _thudSFX;
@@ -32,7 +33,7 @@ public class FakeHeight
 
     public void Initialize( Transform transform )
     {
-        //Just for convenience if not assigned directly
+        //Just for convenience if not assigned directly (assumes first child - what could go wrong.)
         if( _graphic == null && transform.childCount > 0 )
             _graphic = transform.GetChild( 0 );
     }
@@ -63,10 +64,11 @@ public class FakeHeight
         _velocity += Physics2D.gravity.y * Time.fixedDeltaTime * Time.fixedDeltaTime;
         _height = _height + _velocity;
         
+        //Thud
         if( _height <= 0f )
         {
             //Bouncey
-            _velocity = -_velocity * COEF_RESTITUTION;
+            _velocity = -_velocity * Random.Range(COEF_RESTITUTION_MIN, COEF_RESTITUTION_MAX);
             _height = float.Epsilon;
             if( Mathf.Abs( _velocity ) < SLEEP_VELOCITY )
                 _asleep = true;
