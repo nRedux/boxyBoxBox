@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using MDC.Pathfinding;
+using System.Collections.Generic;
 using System.Linq;
 
 
@@ -21,7 +22,9 @@ public class World : MonoBehaviour
 {
     public Tilemap TileMap;
 
-    public MonoAgent AgentPrefab;
+    public Agent AgentPrefab;
+
+    public Entity Box;
 
     public Bounds WorldBounds { get; private set; }
 
@@ -30,6 +33,9 @@ public class World : MonoBehaviour
     private bool _hasPath;
     private AStarPath _path;
 
+    public List<Entity> Boxes = new List<Entity>();
+    public int BoxCount => Boxes.Count;
+
 
     public void SetPath( AStarPath path )
     {
@@ -37,16 +43,25 @@ public class World : MonoBehaviour
         _path = path;
     }
 
-    private void AddAgent( MonoAgent agent )
-    {
-
-    }
-
 
     private void Awake()
     {
+        Boxes.Add( Box );
         Initialize();
     }
+
+    public void AddBox(Entity box )
+    {
+        Boxes.Add( box );
+    }
+
+    public Entity TakeBox()
+    {
+        var box = Boxes.FirstOrDefault();
+        Boxes.Remove( box );
+        return box;
+    }
+
 
 
     private void Initialize()

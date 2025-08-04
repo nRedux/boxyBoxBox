@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 202c2b2844a34294a862dd9ef2d46bde, type: 3}
+  m_Name: Simple Conductor
+  m_EditorClassIdentifier: 
+  WalkBehavior: {fileID: 11400000, guid: 2f48453c89bec5f4e97dbab7f7f71dcd, type: 2}
+  IdleBehavior: {fileID: 11400000, guid: aabc11d54936f2b4db8104f49f5ebaf8, type: 2}
+  SortBehavior: {fileID: 11400000, guid: 8d1ec27d07746fa44aee882a7e5a3153, type: 2}
