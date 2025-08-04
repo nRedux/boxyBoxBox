@@ -13,10 +13,12 @@ public interface IEntity
 public class FakeHeight
 {
     private const float SLEEP_VELOCITY = .001f;
-    private const float COEF_RESTITUTION = .2f;
+    private const float COEF_RESTITUTION = .15f;
 
     public float Height;
     public bool ApplyGravity = true;
+
+    public GameObject SmokeEffect;
 
     public Transform Graphic;
 
@@ -45,7 +47,7 @@ public class FakeHeight
         if( !ApplyGravity || _asleep )
             return;
 
-        _velocity += Physics2D.gravity.y * Time.deltaTime * Time.deltaTime;
+        _velocity += Physics2D.gravity.y * Time.fixedDeltaTime * Time.fixedDeltaTime;
         Height = Height + _velocity;
         
         if( Height <= 0f )
@@ -54,6 +56,9 @@ public class FakeHeight
             Height = float.Epsilon;
             if( Mathf.Abs( _velocity ) < SLEEP_VELOCITY )
                 _asleep = true;
+
+            if( SmokeEffect )
+                SmokeEffect.SetActive( true );
         }
     }
 }
@@ -76,7 +81,7 @@ public class Entity : MonoBehaviour, IEntity
         InitializeQualities();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         _heightOffset.Update();
     }

@@ -6,14 +6,17 @@ using UnityEngine.InputSystem.Utilities;
 
 public class BoxSpawner : MonoBehaviour
 {
-    private World _world;
+
 
     public Entity BoxPrefab;
     public int MaxBoxes;
     public float DelayBetween;
 
+
+    private World _world;
     private float _delayTimer;
     private SpriteRenderer _spriteRenderer;
+
 
     private void Awake()
     {
@@ -56,6 +59,7 @@ public class BoxSpawner : MonoBehaviour
         }
         */
     }
+
 
     private void SpawnBox()
     {

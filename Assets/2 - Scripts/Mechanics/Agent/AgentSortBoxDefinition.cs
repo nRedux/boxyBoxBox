@@ -6,7 +6,6 @@ using UnityEngine;
 [System.Serializable]
 public class AgentSortBox : IAgentBehavior, ICloneable
 {
-    public Agent Agent { get; private set; }
 
     [SerializeField]
     private float _speed;
@@ -14,10 +13,12 @@ public class AgentSortBox : IAgentBehavior, ICloneable
     public IEntity Target;
 
     private Grabbable _grabbedObject;
-
     private PathFollower _pathFollower;
     private bool _isComplete;
     private SortDestination[] _sortDestinations;
+
+    public Agent Agent { get; private set; }
+
 
     public bool CanActivate()
     {
@@ -30,6 +31,7 @@ public class AgentSortBox : IAgentBehavior, ICloneable
         return true;
     }
 
+
     public object Clone()
     {
         AgentSortBox clone = new AgentSortBox();
@@ -37,26 +39,33 @@ public class AgentSortBox : IAgentBehavior, ICloneable
         return clone;
     }
 
+
     public void Initialize( Agent agent )
     {
         this.Agent = agent;
         _sortDestinations = GameObject.FindObjectsByType<SortDestination>( FindObjectsSortMode.None );
     }
 
+
     public bool IsComplete()
     {
         return _isComplete;
     }
 
+
     public void OnActivate()
     {
         _grabbedObject = Target.GetQuality<Grabbable>();
+
+        var r = _grabbedObject.GetComponent<Rigidbody2D>();
+        r.simulated = false;
         _grabbedObject.transform.SetParent( Agent.transform );
 
         var sortable = Target.GetQuality<Sortable>();
         var destination = GetDestination( sortable.SortType );
         _pathFollower = Agent.PathToLocation( destination.transform.position );
     }
+
 
     private SortDestination GetDestination( SortType sort )
     {

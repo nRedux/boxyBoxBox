@@ -20,22 +20,29 @@ public class AStarPathAdapter
 
 public class World : MonoBehaviour
 {
+
+
     public Tilemap TileMap;
 
     public Agent AgentPrefab;
 
     public Entity Box;
 
-    public Bounds WorldBounds { get; private set; }
 
+    private static World _instance;
     private AStarGraph _graph = null;
-
     private bool _hasPath;
     private AStarPath _path;
+    private Camera _camera;
 
     public List<Entity> Boxes = new List<Entity>();
+
     public int BoxCount => Boxes.Count;
 
+    public static World Instance => _instance;
+    public Bounds WorldBounds { get; private set; }
+
+    public Camera Camera => _camera;
 
     public void SetPath( AStarPath path )
     {
@@ -46,22 +53,26 @@ public class World : MonoBehaviour
 
     private void Awake()
     {
+        _camera = Camera.main;
+        _instance = this;
         Boxes.Add( Box );
         Initialize();
     }
+
 
     public void AddBox(Entity box )
     {
         Boxes.Add( box );
     }
 
+
     public Entity TakeBox()
     {
         var box = Boxes.FirstOrDefault();
-        Boxes.Remove( box );
+        if( box != null )
+            Boxes.Remove( box );
         return box;
     }
-
 
 
     private void Initialize()

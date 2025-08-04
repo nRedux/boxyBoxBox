@@ -42,8 +42,7 @@ public class Agent : MonoBehaviour
         }
         else
         {
-            _animatorFacing = _velocity = direction.normalized * Speed * Time.deltaTime;
-            transform.position += _velocity;
+            _animatorFacing = _velocity = direction.normalized * Speed;
         }
     }
 
@@ -82,6 +81,11 @@ public class Agent : MonoBehaviour
         _conductor.Initialize( this );
     }
 
+    private void FixedUpdate()
+    {
+        var r = GetComponent<Rigidbody2D>();
+        r.linearVelocity = _velocity;
+    }
 
     private void UpdateAnimator()
     {

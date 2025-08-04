@@ -46,7 +46,7 @@ public class SimpleConductor : IAgentConductor, ICloneable
         if( _fsm.ActiveBehavior == Idle )
         {
             //Try to find a target
-            _target = _agent.World.Boxes.FirstOrDefault();
+            _target = _agent.World.TakeBox();
             if( _target != null )
             {
                 var concreteTarget = _target as Entity;
@@ -60,6 +60,14 @@ public class SimpleConductor : IAgentConductor, ICloneable
             {
                 if( !TryBeginGrab() )
                     _fsm.ActivateBehavior( Idle );
+            }
+        }
+        else if( _fsm.ActiveBehavior == Sort )
+        {
+            if( Sort.IsComplete() ) 
+            {
+                _target = null;
+                _fsm.ActivateBehavior( Idle );
             }
         }
 

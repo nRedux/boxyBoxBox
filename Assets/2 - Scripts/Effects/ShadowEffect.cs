@@ -40,7 +40,7 @@ public class ShadowEffect : MonoBehaviour
         _shadowRenderer.material = _material;
         _shadowRenderer.color = _shadowRenderer.color * _tint;
         _shadowRenderer.sortingLayerName = _spriteRenderer.sortingLayerName;
-        _shadowRenderer.sortingOrder = _spriteRenderer.sortingOrder - 1;
+        _shadowRenderer.sortingOrder = 1;
     }
 
     private void Update()

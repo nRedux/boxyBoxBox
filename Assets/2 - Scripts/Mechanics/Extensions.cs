@@ -6,6 +6,9 @@ using UnityEngine;
 public static class Extensions
 {
     
+    private static int DEPTH_ORDER_START = 10000;
+    private static int DEPTH_ORDER_DENSITY = 10;
+
     public static List<TSource> GetDerivedComponents<TSource>( this GameObject gameObject ) where TSource: class
     {
         var monoBehaviors = gameObject.GetComponents<MonoBehaviour>();
@@ -13,7 +16,21 @@ public static class Extensions
     }
 
 
+    public static void Do<TSource>( this IEnumerable<TSource> collection, System.Action<TSource> action )
+    {
+        if( collection == null )
+            throw new System.ArgumentNullException( $"Argument {nameof(collection)} cannot be null" );
+        if( action == null )
+            throw new System.ArgumentNullException( $"Argument {nameof( action )} cannot be null" );
+        foreach( var item in collection )
+            action( item );
+    }
 
+    public static int GetDepthSortOrder( this Camera camera, Transform transform )
+    {
+        var screenPoint = camera.WorldToScreenPoint( transform.position );
+        return DEPTH_ORDER_START - Mathf.FloorToInt( screenPoint.y ) / DEPTH_ORDER_DENSITY;
+    }
 }
 
 
