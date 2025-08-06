@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Yohash.PriorityQueue;
 
@@ -10,9 +11,9 @@ namespace MDC.Pathfinding
 
     public class AStarPath
     {
-        public List<Vector2Int> Nodes { get; private set; }
+        public List<Vector2> Nodes { get; private set; }
 
-        public AStarPath( List<Vector2Int> nodes )
+        public AStarPath( List<Vector2> nodes )
         {
             if( nodes == null )
                 throw new System.ArgumentNullException( $"Argument {nameof( nodes )} cannot be null" );
@@ -20,9 +21,9 @@ namespace MDC.Pathfinding
             Nodes = nodes;
         }
 
-        public Vector3[] GetWorldPoints( Vector3 worldOrigin )
+        public Vector3[] GetWorldPoints()
         {
-            return Nodes.Select( node => new Vector3( node.x + worldOrigin.x, node.y + worldOrigin.y ) ).ToArray();
+            return Nodes.Select( node => new Vector3( node.x, node.y ) ).ToArray();
         }
     }
 
@@ -32,7 +33,7 @@ namespace MDC.Pathfinding
         private const float CARDINAL_MOVE_COST = 1f;
         private const float DIAGONAL_MOVE_COST = 1.4142f;
 
-
+        
         /// <summary>
         /// Adjacent node offset lookup
         /// </summary>
@@ -41,7 +42,7 @@ namespace MDC.Pathfinding
             new Vector2Int( 0, 1),                     new Vector2Int( 0, -1),
             new Vector2Int( 1, -1), new Vector2Int( 1, 0), new Vector2Int( 1, 1),
         };
-
+        
 
         /// <summary>
         /// Calculate a path from a start location to a destination location
@@ -56,20 +57,25 @@ namespace MDC.Pathfinding
             if( start == goal )
                 return null;
 
-
             graph.Reset();
-            List<Vector2Int> resultNodes = new List<Vector2Int>();
             SimplePriorityQueue<AStarNode> open = new SimplePriorityQueue<AStarNode>();
-            HashSet<AStarNode> closed = new HashSet<AStarNode>();
             AStarNode current = null;
 
-            var first = graph.GetNodeUnsafe( start );
-            open.Enqueue( first, 0 );
+            var goalNode = graph.GetNodeUnsafe( goal );
+            var firstNode = graph.GetNodeUnsafe( start );
+            
+            if( !firstNode.Walkable )
+                return null;
+            if( !goalNode.Walkable )
+                return null;
+
+            RecalculateNodeValues( firstNode, goal, 0 );
+            open.Enqueue( firstNode, 0 );
+            firstNode.List = AStarList.Open;
 
             while( open.Count > 0 )
             {
                 current = open.Dequeue();
-                closed.Add( current );
                 current.List = AStarList.Closed;
 
                 for( int i = 0; i < _adjacentDirection.Length; i++ )
@@ -80,6 +86,8 @@ namespace MDC.Pathfinding
                         continue;
                     
                     var adjNode = graph.GetNodeUnsafe( adjacentCoord );
+                    if( !adjNode.Walkable )
+                        continue;
 
                     if( adjNode.Position == goal )
                     {
@@ -96,6 +104,27 @@ namespace MDC.Pathfinding
         }
 
 
+        private static bool IsDiagonalValid( AStarGraph graph, Vector2Int from, Vector2Int to )
+        {
+            Vector2Int delta = to - from;
+
+            var a = graph.GetNodeUnsafe( from + new Vector2Int( delta.x, 0 ) );
+            if( !a.Walkable )
+                return false;
+            var b = graph.GetNodeUnsafe( from + new Vector2Int( 0, delta.y ) );
+            if( !b.Walkable )
+                return false;
+
+            return true;
+        }
+
+
+        private static bool IsDiagonal( Vector2Int from, Vector2Int to )
+        {
+            return GetManhattan( from, to ) == 2;
+        }
+
+
         /// <summary>
         /// Evaluate adjacent nodes to determine handling
         /// </summary>
@@ -105,15 +134,66 @@ namespace MDC.Pathfinding
         /// <param name="open"></param>
         private static void EvaluateAdjacentNode( AStarNode adjNode, AStarNode current, Vector2Int goal, SimplePriorityQueue<AStarNode> open )
         {
-            if( !adjNode.Walkable ) return;
-            if( adjNode.List == AStarList.Closed /*&& adjNode.F <= current.F*/ ) return;
-            if( adjNode.List == AStarList.Open && adjNode.F <= current.F ) return;
+            if( adjNode.List == AStarList.Closed)
+                return;
 
-            adjNode.Parent = current;
-            RelcalculateNodeCosts( adjNode, goal );
+            float moveCost = GetMoveCost( current.Position, adjNode.Position );
+            Vector2Int delta = current.Position - adjNode.Position;
+            //Diagonal move must not clip
+            if( IsDiagonal( current.Position, adjNode.Position ) && !IsDiagonalValid( current.Graph, current.Position, adjNode.Position ) )
+                return;
 
-            open.Enqueue( adjNode, adjNode.F );
-            adjNode.List = AStarList.Open;
+
+            if( adjNode.List == AStarList.Open  )
+            {
+                var posDelta = adjNode.Position - current.Position;
+                //Identify cardinal or diagonal
+                float newG = current.G + moveCost;
+                float newH = GetOctile( adjNode.Position, goal );
+                float newF = newG + newH;
+                if( newF < adjNode.F )
+                {
+                    adjNode.Parent = current;
+                    adjNode.G = newG;
+                    adjNode.F = newF;
+                    open.UpdatePriority( adjNode, adjNode.F );
+                }
+            }
+            else
+            {
+                adjNode.Parent = current;
+                RelativeRecalculateNode( adjNode, goal );
+                open.Enqueue( adjNode, adjNode.F );
+                adjNode.List = AStarList.Open;
+            }
+
+        }
+
+
+        /// <summary>
+        /// Recalculate costs relative to parent and goal - expects updated parent
+        /// </summary>
+        /// <param name="node"></param>
+        private static void RelativeRecalculateNode( AStarNode node, Vector2Int goal )
+        {
+            float ancestorG = node.Parent != null ? node.Parent.G : 0f; 
+            //Identify cardinal or diagonal
+            float moveCost = GetMoveCost(node.Parent.Position, node.Position);
+            RecalculateNodeValues( node, goal, ancestorG + moveCost );
+        }
+
+
+        private static void RecalculateNodeValues( AStarNode node, Vector2Int goal, float moveCost )
+        {
+            node.G = moveCost;
+            node.H = GetOctile( node.Position, goal );
+            node.F = node.G + node.H;
+        }
+
+
+        private static float GetMoveCost( Vector2Int from, Vector2Int to )
+        {
+            return GetManhattan( from, to ) == 1 ? CARDINAL_MOVE_COST : DIAGONAL_MOVE_COST;
         }
 
 
@@ -124,21 +204,17 @@ namespace MDC.Pathfinding
         /// <returns>AStarPath object containing the calculated path</returns>
         private static AStarPath BacktracePath( AStarNode node )
         {
-            List<Vector2Int> points = new List<Vector2Int>();
+            List<Vector2> points = new List<Vector2>();
             var current = node;
             while( current.Parent != null )
             {
-                points.Add( current.Position );
+                if( !current.Walkable )
+                    Debug.LogError( $"Backtracing through wall at {current.Position}" );
+                points.Add( current.WorldPosition );
                 current = current.Parent;
             }
             points.Reverse();
             return new AStarPath( points );
-        }
-
-
-        private static int GetManhattan( Vector2Int delta )
-        {
-            return Mathf.Abs( delta.x ) + Mathf.Abs( delta.y );
         }
 
 
@@ -157,19 +233,13 @@ namespace MDC.Pathfinding
         }
 
 
-        /// <summary>
-        /// Recalculate costs relative to parent and goal - expects updated parent
-        /// </summary>
-        /// <param name="node"></param>
-        private static void RelcalculateNodeCosts( AStarNode node, Vector2Int goal )
+        private static int GetManhattan( Vector2Int from, Vector2Int to )
         {
-            var posDelta = node.Position - node.Parent.Position;
-            //Identify cardinal or diagonal
-            float moveCost = GetManhattan( posDelta ) == 1 ? CARDINAL_MOVE_COST : DIAGONAL_MOVE_COST;
-            node.G = node.Parent.G + moveCost;
-            node.H = GetOctile( node.Position, goal );
-            node.F = node.G + node.H;
+            int dx = Mathf.Abs( to.x - from.x );
+            int dy = Mathf.Abs( to.y - from.y );
+            return dx + dy;
         }
+
 
     }
 

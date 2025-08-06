@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 
 namespace MDC.Pathfinding
@@ -39,15 +41,22 @@ namespace MDC.Pathfinding
         public AStarNode Parent = null;
 
 
+        public readonly AStarGraph Graph;
+        private Vector2 CellCenterOffset =>  Graph.CellSize * .5f;
+        public Vector2 WorldPosition =>  Graph.WorldMin + CellCenterOffset + new Vector2( Position.x * Graph.CellSize.x, Position.y * Graph.CellSize.y );
+        public Vector2 MinPosition => WorldPosition + new Vector2( -Graph.CellExtents.x, -Graph.CellExtents.y );
+        public Vector2 MaxPosition => WorldPosition + new Vector2( Graph.CellExtents.x, Graph.CellExtents.y );
+
         public int CompareTo( AStarNode other )
         {
             return F.CompareTo( other.F );
         }
 
-        public AStarNode( Vector2Int position, bool walkable )
+        public AStarNode( AStarGraph graph, Vector2Int position, bool walkable )
         {
             this.Walkable = walkable;
             this.Position = position;
+            this.Graph = graph;
         }
 
 
@@ -57,9 +66,11 @@ namespace MDC.Pathfinding
         public void Reset()
         {
             Parent = null;
-            F = G = H = 0f;
+            G = H = 0f;
+            F = int.MaxValue;
             List = AStarList.Unassigned;
         }
+
 
         public static bool operator ==( AStarNode lhs, AStarNode rhs )
         {
@@ -68,10 +79,12 @@ namespace MDC.Pathfinding
             return lhs.Position == rhs.Position;
         }
 
+
         public static bool operator !=( AStarNode lhs, AStarNode rhs )
         {
             return !( lhs == rhs );
         }
+
 
         public override bool Equals( object obj )
         {
@@ -82,9 +95,29 @@ namespace MDC.Pathfinding
             return false;
         }
 
+
         public override int GetHashCode()
         {
             return Position.GetHashCode();
+        }
+
+
+        public bool PointWithinBounds( Vector2 point )
+        {
+            return point.x >= MinPosition.x && point.y >= MinPosition.y && point.x <= MaxPosition.x && point.x <= MaxPosition.y;
+        }
+
+        internal bool Overlap( Bounds bounds )
+        {
+            var dimension = MaxPosition - MinPosition;
+            Bounds thisBounds = new Bounds(MinPosition + Graph.CellSize * .5f, Graph.CellSize);
+            var size = thisBounds.size;
+            size.z = 1f;
+            thisBounds.size = size;
+            var center = thisBounds.center;
+            center.z = 1f;
+            thisBounds.center = center;
+            return thisBounds.Intersects( bounds );
         }
     }
 

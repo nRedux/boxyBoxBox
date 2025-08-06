@@ -7,30 +7,42 @@ using TMPro;
 public class Agent : MonoBehaviour
 {
     private const float FOOTSTEP_FREQUENCY = .35f;
-    private const float SLIDE_OFF_RATE = .8f;
+    private const float SLIDE_OFF_RATE = 1.3f;
+    private const string ANIM_FACING_X = "facing_x";
+    private const string ANIM_FACING_Y = "facing_y";
+    private const string ANIM_VELOCITY = "velocity";
+
+    [Tooltip( "The AI behavior conductor" )]
     [SerializeReference]
     public AgentConductorBase Conductor;
 
+    [Tooltip( "The audio which plays for footstep sounds." )]
     [SerializeField]
     private AudioSource _footstepSource = null;
 
+    [Tooltip( "The rate of moment of the agent" )]
     [SerializeField]
     public float _speed = 1f;
+
+    [Tooltip( "How close to the current path node before we look to move to the next." )]
     [SerializeField]
     private float _pathGoalDist = .1f;
 
 
-    private Vector3 _velocity, _animatorFacing;
+    private Vector3 _velocity = Vector3.zero, _animatorFacing = Vector3.zero;
     private Animator _animator = null;
     private AStarPath _path = null;
     private Vector3[] _pathPoints = null;
     private int _pathIndex = 0;
     private float _pathGoalDistSqr = 0f;
-    private PathFollower _pathFollower;
-    private IAgentConductor _conductor;
-    private Rigidbody2D _rigidBody;
+    private PathFollower _pathFollower = null;
+    private IAgentConductor _conductor = null;
+    private Rigidbody2D _rigidBody = null;
     private Coroutine _footstepsRoutine = null;
     private WaitForSeconds _footstepDelay = new WaitForSeconds( FOOTSTEP_FREQUENCY );
+    private int _animFacingXHash = -1;
+    private int _animFacingYHash = -1;
+    private int _animFacingVelHash = -1;
 
     public World World { get; private set; }
     public Vector3 Velocity => _velocity;
@@ -75,14 +87,17 @@ public class Agent : MonoBehaviour
 
     private void OnCollisionStay2D( Collision2D collision )
     {
-        Rigidbody2D e = collision.collider.GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = collision.collider.GetComponent<Rigidbody2D>();
+        if( rb == null )
+            return;
+
         Vector3 deltaPos = transform.position - collision.transform.position;
         deltaPos = deltaPos - Vector3.Project( deltaPos, _rigidBody.linearVelocity.normalized );
         if( deltaPos.magnitude < .001f )
             deltaPos = new Vector3( deltaPos.y, deltaPos.z, 0f );
 
         deltaPos.z = 0f;
-        e.AddForce( -deltaPos.normalized * SLIDE_OFF_RATE / Time.fixedDeltaTime );
+        rb.AddForce( -deltaPos.normalized * SLIDE_OFF_RATE / Time.fixedDeltaTime );
     }
 
 
@@ -95,6 +110,7 @@ public class Agent : MonoBehaviour
             enabled = false;   
         _conductor = Conductor.CloneData() as IAgentConductor;
         _conductor.Initialize( this );
+        CacheAnimHashes();
     }
 
 
@@ -133,13 +149,21 @@ public class Agent : MonoBehaviour
     }
 
 
+
+    private void CacheAnimHashes()
+    {
+        _animFacingXHash = Animator.StringToHash( ANIM_FACING_X );
+        _animFacingYHash = Animator.StringToHash( ANIM_FACING_Y );
+        _animFacingVelHash = Animator.StringToHash( ANIM_VELOCITY );
+    }
+
     private void UpdateAnimator()
     {
         if( _animator == null )
             return;
-        _animator.SetFloat( "facing_x", _animatorFacing.x );
-        _animator.SetFloat( "facing_y", _animatorFacing.y );
-        _animator.SetFloat( "velocity", (_velocity / Time.deltaTime).magnitude > .001f ? .8f : 0.1f );
+        _animator.SetFloat( _animFacingXHash, _animatorFacing.x );
+        _animator.SetFloat( _animFacingYHash, _animatorFacing.y );
+        _animator.SetFloat( _animFacingVelHash, (_velocity / Time.deltaTime).magnitude > .001f ? .8f : 0.1f );
     }
 
 

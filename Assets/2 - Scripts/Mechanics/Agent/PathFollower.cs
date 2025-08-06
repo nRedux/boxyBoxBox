@@ -27,7 +27,7 @@ public class PathFollower
         _path = path;
         _pathGoalDistSqr = PATHING_GOAL_DIST * PATHING_GOAL_DIST; ;
         _path = path;
-        _pathPoints = _path.GetWorldPoints( world.WorldBounds.min );
+        _pathPoints = _path.GetWorldPoints();
         _pathIndex = 0;
 
         IsComplete = false;
@@ -36,15 +36,19 @@ public class PathFollower
 
     public void FollowPath()
     {
+        for( int i = 1; i < _pathPoints.Length; i++ )
+        {
+            Debug.DrawLine( _pathPoints[i] + Vector3.down * .01f, _pathPoints[i - 1] + Vector3.down * .01f, Color.red );
+        }
         if( IsComplete )
             return;
 
         if( _pathPoints != null )
         {
-            Vector3 toPoint = _pathPoints[_pathIndex] - _agent.transform.position;
+            Vector3 toPoint = (_pathPoints[_pathIndex] + Vector3.up * .25f + Vector3.right * .25f) - _agent.transform.position;
             _agent.Move( toPoint );
 
-            Vector3 postMoveToPoint = _pathPoints[_pathIndex] - _agent.transform.position;
+            Vector3 postMoveToPoint = ( _pathPoints[_pathIndex] + Vector3.up * .25f + Vector3.right * .25f ) - _agent.transform.position;
             if( postMoveToPoint.sqrMagnitude <= _pathGoalDistSqr )
             {
                 _pathIndex++;

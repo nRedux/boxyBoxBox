@@ -16,16 +16,14 @@ public class RendererSortReference
 /// <summary>
 /// Could be optimized via central sort order manager - quick and dirty here
 /// </summary>
+[ExecuteAlways]
 public class DepthSorter : MonoBehaviour
 {
     [SerializeField]
     private RendererSortReference[] _spriteRendererHierarchy = null;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Awake()
-    {
-    }
-
+    private Camera _camera;
+    
 
     private void Start()
     {
@@ -42,7 +40,9 @@ public class DepthSorter : MonoBehaviour
 
     private void UpdateOrder( )
     {
-        var order = World.Instance.Camera.GetDepthSortOrder( transform );
+        if( _camera == null )
+            _camera = Camera.main;
+        var order = _camera.GetDepthSortOrder( transform );
         _spriteRendererHierarchy.Do( x => x.ApplyDepth( order ) );
     }
 }
