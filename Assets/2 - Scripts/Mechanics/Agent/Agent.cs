@@ -250,6 +250,8 @@ public class Agent : MonoBehaviour
 
     public void Update()
     {
+        if( !World.Playing )
+            return;
         ClickTest();
         UpdateAnimator();
         UpdatePathFollowing();

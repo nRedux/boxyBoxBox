@@ -34,7 +34,8 @@ public class BoxSpawner : MonoBehaviour
 
     private void Update()
     {
-
+        if( !_world.Playing )
+            return;
         _delayTimer -= Time.deltaTime;
         if( _delayTimer <= 0f && _world.BoxCount <= _maxBoxes )
         {

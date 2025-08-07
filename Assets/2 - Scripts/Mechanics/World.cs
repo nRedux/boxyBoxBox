@@ -30,7 +30,10 @@ public class World : MonoBehaviour
 
     public int BoxCount => _boxes.Count;
 
-    
+
+    public bool Playing { get; set; } = false;
+
+
     public Bounds WorldBounds { get; private set; }
 
 
@@ -162,5 +165,11 @@ public class World : MonoBehaviour
     public AStarPath CalculatePath( Vector2Int start, Vector2Int goal )
     {
         return AStar.FindPath( _graph, start, goal );
+    }
+
+
+    public void BeginPlay()
+    {
+        Playing = true;
     }
 }
