@@ -2,6 +2,63 @@ using System.Collections;
 using UnityEngine;
 using MDC.Pathfinding;
 using TMPro;
+using System.Linq;
+
+public enum EmoteType
+{
+    Question,
+    Exclaim,
+    Idea
+}
+
+
+
+[System.Serializable]
+public class Emote
+{
+    public EmoteType Type;
+    public GameObject GameObject;
+
+    public void Show()
+    {
+        if( GameObject == null )
+            return;
+        GameObject.SetActive( true );
+    }
+
+    public void Hide()
+    {
+        if( GameObject == null )
+            return;
+        GameObject.SetActive( false );
+    }
+}
+
+
+
+[System.Serializable]
+public class Emotes
+{
+    [SerializeField]
+    private Emote[] _emotes;
+
+    public void ShowEmote( EmoteType type )
+    {
+        HideEmotes();
+        var emote = _emotes.FirstOrDefault( x => x.Type == type );
+        if( emote == null ) return;
+        emote.Show();
+    }
+
+    public void HideEmotes()
+    {
+        _emotes.Do( x =>
+        {
+            x.Hide();
+        } );
+    }
+}
+
 
 
 public class Agent : MonoBehaviour
@@ -28,6 +85,7 @@ public class Agent : MonoBehaviour
     [SerializeField]
     private float _pathGoalDist = .1f;
 
+    public Emotes Emotes;
 
     private Vector3 _velocity = Vector3.zero, _animatorFacing = Vector3.zero;
     private Animator _animator = null;
@@ -44,6 +102,7 @@ public class Agent : MonoBehaviour
     private int _animFacingYHash = -1;
     private int _animFacingVelHash = -1;
 
+
     public World World { get; private set; }
     public Vector3 Velocity => _velocity;
 
@@ -57,6 +116,12 @@ public class Agent : MonoBehaviour
         {
             _animatorFacing = _velocity = direction.normalized * _speed;
         }
+    }
+
+
+    public void SetFacingDirection( Vector3 direction )
+    {
+        _animatorFacing = direction;
     }
 
 
@@ -77,10 +142,25 @@ public class Agent : MonoBehaviour
     }
 
 
+    public void StopPathing()
+    {
+        _velocity = Vector3.zero;
+        if( _pathFollower == null ) return;
+        _pathFollower.Following = false;
+    }
+
+    public void ResumePathing()
+    {
+        if( _pathFollower == null ) return;
+        _pathFollower.Following = true;
+    }
+
+
     private void Awake()
     {
         _rigidBody = GetComponent<Rigidbody2D>();
         var world = FindFirstObjectByType<World>();
+        
         Initialize( world );
     }
     
@@ -103,11 +183,12 @@ public class Agent : MonoBehaviour
 
     public void Initialize( World world )
     {
+        Emotes.HideEmotes();
         _animator = GetComponent<Animator>();
         this.World = world;
-        _pathGoalDistSqr = _pathGoalDist * _pathGoalDist;
         if( this.World == null )
             enabled = false;   
+        _pathGoalDistSqr = _pathGoalDist * _pathGoalDist;
         _conductor = Conductor.CloneData() as IAgentConductor;
         _conductor.Initialize( this );
         CacheAnimHashes();

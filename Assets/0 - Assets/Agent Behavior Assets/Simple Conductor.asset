@@ -15,3 +15,4 @@ MonoBehaviour:
   WalkBehavior: {fileID: 11400000, guid: 2f48453c89bec5f4e97dbab7f7f71dcd, type: 2}
   IdleBehavior: {fileID: 11400000, guid: aabc11d54936f2b4db8104f49f5ebaf8, type: 2}
   SortBehavior: {fileID: 11400000, guid: 8d1ec27d07746fa44aee882a7e5a3153, type: 2}
+  SurpriseBehavior: {fileID: 11400000, guid: 296c3984d8ab0a749b9400595eb031f3, type: 2}

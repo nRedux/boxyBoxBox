@@ -14,11 +14,15 @@ public class SimpleConductor : IAgentConductor, ICloneable
     public AgentWalk Walk;
     [NonSerialized]
     public AgentSortBox Sort;
+    [NonSerialized]
+    public AgentSurprise Surprise;
 
     private BehaviorFSM _fsm = null;
     private Agent _agent = null;
 
     private IEntity _target;
+
+    private bool _surpriseComplete = false;
 
     public SimpleConductor( AgentIdle idle, AgentWalk walk, AgentSortBox sort )
     {
@@ -33,8 +37,10 @@ public class SimpleConductor : IAgentConductor, ICloneable
         Idle.Initialize( agent );
         Walk.Initialize( agent );
         Sort.Initialize( agent );
+        Surprise.Initialize( agent );
+
         _fsm = new BehaviorFSM();
-        _fsm.ActivateBehavior( Idle );
+        _fsm.ActivateBehavior( Surprise );
         _agent = agent;
     }
 
@@ -43,10 +49,27 @@ public class SimpleConductor : IAgentConductor, ICloneable
     {
         _fsm.Update();
 
+
+
+        if( _fsm.ActiveBehavior == Surprise && !_surpriseComplete && _target == null )
+        {
+            _target = _agent.World.TakeBox();
+
+            if( _target != null )
+            {
+                _surpriseComplete = true;
+                Surprise.Target = _target;
+            }
+        }
+        else if( _fsm.ActiveBehavior == Surprise && Surprise.IsComplete() )
+        {
+            _fsm.ActivateBehavior( Idle );
+        }
+
         if( _fsm.ActiveBehavior == Idle )
         {
-            //Try to find a target
             _target = _agent.World.TakeBox();
+
             if( _target != null )
             {
                 var concreteTarget = _target as Entity;
@@ -134,6 +157,7 @@ public class SimpleConductorDefinition: AgentConductorDefinition<SimpleConductor
     public AgentWalkDefinition WalkBehavior;
     public AgentIdleDefinition IdleBehavior;
     public AgentSortBoxDefinition SortBehavior;
+    public AgentSurpriseBehaviorDefinition SurpriseBehavior;
 
     public override ICloneable CloneData()
     {
@@ -142,6 +166,7 @@ public class SimpleConductorDefinition: AgentConductorDefinition<SimpleConductor
         concreteClone.Idle = IdleBehavior.CloneData() as AgentIdle;
         concreteClone.Walk = WalkBehavior.CloneData() as AgentWalk;
         concreteClone.Sort = SortBehavior.CloneData() as AgentSortBox;
+        concreteClone.Surprise = SurpriseBehavior.CloneData() as AgentSurprise;
         return clone;
     }
 

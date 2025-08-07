@@ -13,6 +13,10 @@ namespace MDC.Pathfinding
     {
         public List<Vector2> Nodes { get; private set; }
 
+
+        private AStarPath() { }
+
+
         public AStarPath( List<Vector2> nodes )
         {
             if( nodes == null )
@@ -21,10 +25,42 @@ namespace MDC.Pathfinding
             Nodes = nodes;
         }
 
+
         public Vector3[] GetWorldPoints()
         {
             return Nodes.Select( node => new Vector3( node.x, node.y ) ).ToArray();
         }
+
+
+        /// <summary>
+        /// Calculates the full length of the path.
+        /// </summary>
+        /// <returns>The length of the path</returns>
+        public float CalculateLength()
+        {
+            return CalculateLength( Nodes.Count - 1 );
+        }
+
+
+        /// <summary>
+        /// Calculates the length of the path from it's start to a given index on the path.
+        /// </summary>
+        /// <param name="lastIndex">The final index to consider in the path</param>
+        /// <returns>The length of the path up to the given index.</returns>
+        /// <exception cref="System.IndexOutOfRangeException">Thrown if the index lies outside of the node list bounds of the path.</exception>
+        public float CalculateLength( int lastIndex )
+        {
+            if( lastIndex < 0 || lastIndex > Nodes.Count - 1 )
+                throw new System.IndexOutOfRangeException("Index out of bounds");
+
+            float result = 0f;
+            for( int i = 1; i <= lastIndex; i++ )
+            {
+                result += Vector3.Magnitude( Nodes[i] - Nodes[i - 1] );
+            }
+            return result;
+        }
+
     }
 
 
