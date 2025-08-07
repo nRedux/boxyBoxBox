@@ -252,7 +252,6 @@ public class Agent : MonoBehaviour
     {
         if( !World.Playing )
             return;
-        ClickTest();
         UpdateAnimator();
         UpdatePathFollowing();
         UpdateConductor();
@@ -273,28 +272,21 @@ public class Agent : MonoBehaviour
         {
             StartFootsteps();
             _pathFollower.FollowPath();
-            if( _pathFollower.IsComplete ) 
-            {
+
+            if( _pathFollower.IsComplete || !_pathFollower.Following )
                 StopFootsteps();
+            else
+                StartFootsteps();
+
+            if( _pathFollower.IsComplete )
+            {
                 _pathFollower = null;
             }
         }
-    }
-
-
-    private void ClickTest()
-    {
-        if( !Input.GetMouseButtonDown( 0 ) )
-            return;
-        Vector3 point = Camera.main.ScreenToWorldPoint( Input.mousePosition );
-        RaycastHit2D hit = Physics2D.Raycast( point, Vector2.zero );
-        if( hit.collider != null )
-        {
-            PathToLocation( hit.point );
-        }
         else
         {
-            Debug.LogError( "No mouse hit" );
+            StopFootsteps();
         }
     }
+
 }

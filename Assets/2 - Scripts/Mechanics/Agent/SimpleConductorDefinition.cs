@@ -53,7 +53,7 @@ public class SimpleConductor : IAgentConductor, ICloneable
 
         if( _fsm.ActiveBehavior == Surprise && !_surpriseComplete && _target == null )
         {
-            _target = _agent.World.TakeBox();
+            _target = _agent.World.TakeBox(_agent.transform.position);
 
             if( _target != null )
             {
@@ -68,7 +68,7 @@ public class SimpleConductor : IAgentConductor, ICloneable
 
         if( _fsm.ActiveBehavior == Idle )
         {
-            _target = _agent.World.TakeBox();
+            _target = _agent.World.TakeBox( _agent.transform.position );
 
             if( _target != null )
             {

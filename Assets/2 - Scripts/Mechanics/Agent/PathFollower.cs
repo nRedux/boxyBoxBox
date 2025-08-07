@@ -51,7 +51,6 @@ public class PathFollower
             Vector3 toPoint = (_pathPoints[_pathIndex] + Vector3.up * .25f + Vector3.right * .25f) - _agent.transform.position;
             _agent.Move( toPoint );
             float timeNorm = CalculateTimeOnPath( _agent.transform.position );
-            Debug.Log( timeNorm );
             Vector3 postMoveToPoint = ( _pathPoints[_pathIndex] + Vector3.up * .25f + Vector3.right * .25f ) - _agent.transform.position;
             if( postMoveToPoint.sqrMagnitude <= _pathGoalDistSqr )
             {

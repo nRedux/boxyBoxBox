@@ -62,12 +62,23 @@ public class World : MonoBehaviour
     }
 
 
-    public Entity TakeBox()
+    public Entity TakeBox( Vector3 agentPos )
     {
-        var box = _boxes.FirstOrDefault();
-        if( box != null )
-            _boxes.Remove( box );
-        return box;
+        Entity closest = null;
+        float smallestDist = float.MaxValue;
+
+        foreach( var b in _boxes )
+        {
+            float dist = Vector3.SqrMagnitude( agentPos - b.transform.position );
+            if( dist < smallestDist )
+            {
+                closest = b;
+                smallestDist = dist;
+            }
+        }
+
+        _boxes.Remove( closest );
+        return closest;
     }
 
 

@@ -85,7 +85,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 9984
+  m_SortingOrder: 9985
   m_Sprite: {fileID: -6590806417213380581, guid: 3d2fc9ab906704640b8f7abcdeb90f29, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -246,7 +246,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.3337275, y: 0.29}
+  m_Size: {x: 0.20614347, y: 0.28999996}
   m_EdgeRadius: 0
 --- !u!82 &2125648967987825308
 AudioSource:
